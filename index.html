@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>脳内アフロメーカー</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=M+PLUS+Rounded+1c:wght@700&display=swap" rel="stylesheet">
+    <style>
+        /* カスタムスタイル */
+        :root {
+            --afro-black: #1a1a1a;
+            --neon-pink: #ff00ff;
+            --neon-green: #00ff00;
+            --neon-yellow: #ffff00;
+            --bg-color: #120f1f;
+        }
+
+        body {
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(255, 0, 255, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(0, 255, 255, 0.1) 0%, transparent 20%);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+            ::-webkit-scrollbar { width: 8px; }
+            ::-webkit-scrollbar-track { background: #1f2937; }
+            ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+            ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+        }
+
+        .funky-font {
+            font-family: 'Bangers', cursive;
+            letter-spacing: 2px;
+        }
+
+        /* アフロ表示エリア */
+        .afro-stage {
+            position: relative;
+            width: 320px;
+            height: 400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            z-index: 10;
+        }
+
+        /* 顔コンテナ */
+        .face-container {
+            width: 100px;
+            height: 100px;
+            background-color: transparent;
+            border-radius: 50%;
+            position: relative;
+            z-index: 20;
+            bottom: 30px;
+            transition: border-color 0.3s ease, transform 0.3s ease;
+            cursor: pointer;
+            overflow: hidden;
+            border: 2px solid rgba(255,255,255,0.2);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        
+        .face-container:hover {
+            border-color: var(--neon-pink);
+            box-shadow: 0 0 15px rgba(255,0,255,0.4);
+        }
+
+        .face-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; transition: opacity 0.3s;
+            border-radius: 50%; z-index: 30; pointer-events: none;
+        }
+
+        .face-container:hover .face-overlay {
+            opacity: 1;
+        }
+
+        .face-icon {
+            font-size: 100px;
+            color: #fcece2;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* 切り抜かれた画像を表示 */
+        .face-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        /* アフロ本体 */
+        .afro-hair-container {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 300px;
+            z-index: 15;
+            animation: afro-bob 2s infinite ease-in-out alternate;
+            pointer-events: none;
+        }
+
+        @keyframes afro-bob {
+            0% { transform: translateX(-50%) translateY(0) scale(1); }
+            100% { transform: translateX(-50%) translateY(-5px) scale(1.02); }
+        }
+
+        .afro-particle {
+            position: absolute;
+            border-radius: 50%;
+            transition: all 0.5s ease;
+            box-shadow: inset -2px -2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .afro-text-particle {
+            display: flex; justify-content: center; align-items: center;
+            font-size: 10px; font-weight: bold;
+            color: rgba(255,255,255,0.9);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            overflow: hidden; white-space: nowrap;
+            z-index: 16;
+        }
+
+        .input-glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.2);
+        }
+        
+        .input-glass:focus {
+            box-shadow: 0 0 20px rgba(255, 0, 255, 0.6);
+            border-color: var(--neon-pink);
+            outline: none;
+        }
+
+        .btn-funky {
+            background: linear-gradient(45deg, #ff00cc, #3333ff);
+            border: none; position: relative; overflow: hidden;
+            transition: transform 0.2s;
+        }
+        
+        .btn-funky:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 0, 204, 0.6);
+        }
+
+        .btn-funky::after {
+            content: ''; position: absolute; top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
+            transform: rotate(45deg); animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+
+        .result-item {
+            animation: slideIn 0.5s ease forwards;
+            opacity: 0; transform: translateX(-20px);
+        }
+
+        @keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
+        
+        .disco-ball { font-size: 3rem; animation: spin 2s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        .hidden-input { display: none; }
+
+        /* スライダー */
+        input[type=range] {
+            -webkit-appearance: none; width: 100%; background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 16px; width: 16px;
+            border-radius: 50%; background: #ff00ff;
+            cursor: pointer; margin-top: -6px;
+            box-shadow: 0 0 5px rgba(255,0,255,0.8);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 4px; cursor: pointer;
+            background: rgba(255,255,255,0.3); border-radius: 2px;
+        }
+        input[type=range]:focus { outline: none; }
+
+    </style>
+</head>
+
+<body class="flex flex-col items-center py-10 px-4">
+
+    <!-- タイトル -->
+    <header class="mb-8 text-center relative">
+        <h1 class="text-5xl md:text-7xl font-bold funky-font text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-yellow-400 to-blue-500 drop-shadow-[0_0_10px_rgba(255,0,255,0.5)]">
+            BRAIN AFRO
+        </h1>
+        <p class="text-sm md:text-base text-gray-300 mt-2 tracking-widest">脳内アフロメーカー</p>
+        <div class="absolute -top-10 -right-10 text-4xl animate-bounce">🪩</div>
+    </header>
+
+    <!-- メインコンテンツ -->
+    <main class="w-full max-w-4xl flex flex-col md:flex-row gap-8 items-start">
+        
+        <!-- 左側: 入力とアフロ表示 -->
+        <div class="flex-1 w-full flex flex-col items-center">
+            
+            <!-- 入力フォーム -->
+            <div class="w-full max-w-sm mb-6 flex gap-2">
+                <input type="text" id="nameInput" placeholder="名前を入れてね (例: アフロ田中)" 
+                    class="input-glass text-white px-4 py-3 rounded-l-full w-full text-lg placeholder-gray-400">
+                <button onclick="analyzeAfro()" 
+                    class="btn-funky text-white font-bold px-6 py-3 rounded-r-full text-lg whitespace-nowrap">
+                    診断!
+                </button>
+            </div>
+
+            <!-- アフロステージ (Canvasエリア) -->
+            <div id="captureArea" class="relative bg-gray-900/50 rounded-3xl p-4 border border-white/10 w-full max-w-sm flex flex-col items-center">
+                <div class="absolute top-2 left-4 text-xs text-gray-500">BRAIN AFRO MAKER</div>
+                
+                <div class="afro-stage">
+                    <!-- アフロ部分 (JSで生成) -->
+                    <div id="afroContainer" class="afro-hair-container"></div>
+                    
+                    <!-- 顔部分 -->
+                    <div class="face-container" id="faceContainer" onclick="document.getElementById('faceUpload').click()" title="クリックして写真を変更">
+                        <!-- デフォルトアイコン -->
+                        <i id="defaultFaceIcon" class="fa-solid fa-circle-user face-icon"></i>
+                        <!-- アップロード画像（トリミング済み） -->
+                        <img id="uploadedFaceImage" class="face-image hidden" src="" alt="Face">
+                        
+                        <!-- ホバー時のオーバーレイ -->
+                        <div class="face-overlay">
+                            <i class="fa-solid fa-camera text-white text-2xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 隠しファイル入力 -->
+                <input type="file" id="faceUpload" class="hidden-input" accept="image/*">
+
+                <!-- 補助テキスト -->
+                <p id="uploadHint" class="text-xs text-gray-500 mt-[-10px] mb-2 cursor-pointer hover:text-pink-400 transition" onclick="document.getElementById('faceUpload').click()">
+                    <i class="fa-solid fa-camera"></i> 写真を変更する
+                </p>
+
+                <div id="userNameDisplay" class="text-xl font-bold mt-2 text-center text-pink-400 min-h-[1.75rem]"></div>
+            </div>
+
+            <!-- シェアボタン等 -->
+            <div class="mt-6 flex gap-3 flex-wrap justify-center" id="actionButtons" style="display: none;">
+                <button onclick="shareOnTwitter()" class="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-full border border-gray-700 transition flex items-center gap-2">
+                    <i class="fa-brands fa-x-twitter"></i> シェア
+                </button>
+                <button onclick="downloadImage()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full transition flex items-center gap-2">
+                    <i class="fa-solid fa-camera"></i> 保存
+                </button>
+            </div>
+        </div>
+
+        <!-- 右側: 分析結果リスト -->
+        <div class="flex-1 w-full max-w-sm">
+            <div class="bg-gray-800/60 backdrop-blur-md rounded-2xl p-6 border border-white/10 h-full">
+                <h2 class="text-2xl font-bold mb-4 flex items-center gap-2 text-yellow-300">
+                    <i class="fa-solid fa-chart-pie"></i> 成分リスト
+                </h2>
+                
+                <div id="loading" class="hidden flex justify-center items-center py-10">
+                    <div class="disco-ball">🪩</div>
+                    <span class="ml-3 text-xl font-bold animate-pulse">Grooving...</span>
+                </div>
+
+                <div id="resultList" class="space-y-3">
+                    <p class="text-gray-400 text-center py-10">
+                        名前を入力して「診断!」を押すと<br>
+                        あなたのアフロ成分が表示されます。
+                    </p>
+                </div>
+
+                <div id="totalVolume" class="mt-6 pt-4 border-t border-gray-700 text-center hidden">
+                    <p class="text-sm text-gray-400">TOTAL VOLUME</p>
+                    <p class="text-4xl font-bold text-pink-500" id="volumeValue">0%</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- トリミングモーダル -->
+    <div id="cropModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/90 backdrop-blur-sm p-4">
+        <div class="bg-gray-800 p-6 rounded-2xl w-full max-w-md border border-white/10 shadow-2xl flex flex-col">
+            <h3 class="text-xl font-bold mb-4 text-white text-center">写真の位置を調整</h3>
+            
+            <p class="text-xs text-gray-400 text-center mb-2">ドラッグで移動・スライダーで拡大縮小</p>
+
+            <!-- トリミングエリア -->
+            <div class="relative w-full aspect-square bg-gray-900 rounded-lg overflow-hidden cursor-move touch-none border border-gray-700" id="cropAreaWrapper">
+                <canvas id="cropCanvas" class="w-full h-full"></canvas>
+                <!-- ガイド（黒い半透明の枠でマスクするイメージ） -->
+                <div class="absolute inset-0 pointer-events-none" style="box-shadow: inset 0 0 0 9999px rgba(0,0,0,0.6);">
+                    <!-- 中央の穴（実際にはここだけbox-shadowがかからないように見せるのは難しいので、divの構成を工夫する） -->
+                </div>
+                <!-- 簡易的な円形ガイド -->
+                <div class="absolute inset-0 pointer-events-none flex items-center justify-center">
+                    <div class="w-48 h-48 rounded-full border-2 border-pink-500 shadow-[0_0_0_9999px_rgba(0,0,0,0.7)]"></div>
+                </div>
+            </div>
+
+            <!-- コントロール -->
+            <div class="mt-6 flex items-center gap-4">
+                <i class="fa-solid fa-image text-xs text-gray-400"></i>
+                <input type="range" id="cropZoom" min="0.1" max="3" step="0.01" value="1" class="flex-1">
+                <i class="fa-solid fa-magnifying-glass-plus text-xs text-gray-400"></i>
+            </div>
+
+            <div class="mt-8 flex justify-end gap-3">
+                <button onclick="closeCropModal()" class="px-4 py-2 rounded-full text-gray-300 hover:bg-gray-700 transition">キャンセル</button>
+                <button onclick="applyCrop()" class="px-6 py-2 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold hover:scale-105 transition shadow-lg">決定</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="mt-12 text-gray-500 text-xs text-center">
+        <p>© 2024 Brain Afro Maker. All rights reserved.</p>
+        <p class="mt-1">Powered by Tailwind & Funkiness</p>
+    </footer>
+
+    <!-- html2canvas (画像保存用) -->
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
+    <script>
+        // --- 設定データ ---
+        const AFRO_INGREDIENTS = [
+            { name: "愛", color: "#ff69b4" },        // Pink
+            { name: "ファンク", color: "#ffd700" },   // Gold
+            { name: "野望", color: "#ff4500" },      // OrangeRed
+            { name: "虚無", color: "#a9a9a9" },      // DarkGray
+            { name: "音楽", color: "#00bfff" },      // DeepSkyBlue
+            { name: "睡眠", color: "#9370db" },      // MediumPurple
+            { name: "金", color: "#ffff00" },        // Yellow
+            { name: "筋肉", color: "#cd5c5c" },      // IndianRed
+            { name: "推し", color: "#ff1493" },      // DeepPink
+            { name: "寿司", color: "#ff7f50" },      // Coral
+            { name: "宇宙", color: "#4b0082" },      // Indigo
+            { name: "猫", color: "#ffb6c1" },        // LightPink
+            { name: "ラーメン", color: "#f4a460" },  // SandyBrown
+            { name: "休日", color: "#98fb98" },      // PaleGreen
+            { name: "リズム", color: "#00fa9a" },    // MediumSpringGreen
+            { name: "知性", color: "#4682b4" },      // SteelBlue
+            { name: "狂気", color: "#dc143c" },      // Crimson
+            { name: "ソウル", color: "#8b4513" },    // SaddleBrown
+            { name: "平和", color: "#87ceeb" },      // SkyBlue
+            { name: "毒", color: "#9400d3" },        // DarkViolet
+        ];
+
+        let currentResults = [];
+        let currentName = "";
+
+        // トリミング用ステート
+        let cropState = {
+            img: null,
+            scale: 1,
+            x: 0,
+            y: 0,
+            isDragging: false,
+            startX: 0,
+            startY: 0,
+            lastX: 0,
+            lastY: 0
+        };
+        const cropCanvas = document.getElementById('cropCanvas');
+        const cropCtx = cropCanvas.getContext('2d');
+
+        // --- コアロジック ---
+
+        function generateHash(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return Math.abs(hash);
+        }
+
+        function mulberry32(a) {
+            return function() {
+                var t = a += 0x6D2B79F5;
+                t = Math.imul(t ^ (t >>> 15), t | 1);
+                t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+                return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+            }
+        }
+
+        function analyzeAfro() {
+            const nameInput = document.getElementById('nameInput');
+            const name = nameInput.value.trim();
+            if (!name) {
+                alert("名前を入力してね！");
+                return;
+            }
+
+            currentName = name;
+            document.getElementById('userNameDisplay').innerText = `Afro Type: ${name}`;
+            document.getElementById('resultList').innerHTML = '';
+            document.getElementById('afroContainer').innerHTML = '';
+            document.getElementById('actionButtons').style.display = 'none';
+            document.getElementById('totalVolume').classList.add('hidden');
+            document.getElementById('loading').classList.remove('hidden');
+
+            setTimeout(() => {
+                performAnalysis(name);
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('actionButtons').style.display = 'flex';
+                document.getElementById('totalVolume').classList.remove('hidden');
+            }, 800);
+        }
+
+        function performAnalysis(name) {
+            const seed = generateHash(name);
+            const rng = mulberry32(seed);
+
+            const numIngredients = Math.floor(rng() * 4) + 3;
+            let availableIngredients = [...AFRO_INGREDIENTS];
+            
+            for (let i = availableIngredients.length - 1; i > 0; i--) {
+                const j = Math.floor(rng() * (i + 1));
+                [availableIngredients[i], availableIngredients[j]] = [availableIngredients[j], availableIngredients[i]];
+            }
+
+            const selectedIngredients = availableIngredients.slice(0, numIngredients);
+            
+            let remaining = 100;
+            let results = [];
+            
+            selectedIngredients.forEach((item, index) => {
+                if (index === selectedIngredients.length - 1) {
+                    results.push({ ...item, percentage: remaining });
+                } else {
+                    const max = remaining - (selectedIngredients.length - 1 - index) * 5; 
+                    const val = Math.floor(rng() * (max * 0.6)) + 5;
+                    results.push({ ...item, percentage: val });
+                    remaining -= val;
+                }
+            });
+
+            results.sort((a, b) => b.percentage - a.percentage);
+            currentResults = results;
+
+            const volume = Math.floor(rng() * 150) + 100;
+            document.getElementById('volumeValue').innerText = `${volume}%`;
+
+            renderResults(results);
+            renderAfro(results, rng, volume);
+        }
+
+        function renderResults(results) {
+            const container = document.getElementById('resultList');
+            results.forEach((item, index) => {
+                const el = document.createElement('div');
+                el.className = 'result-item flex items-center justify-between bg-gray-700/50 p-2 rounded mb-2';
+                el.style.animationDelay = `${index * 0.1}s`;
+                el.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-4 h-4 rounded-full shadow-[0_0_5px]" style="background-color: ${item.color}; box-shadow: 0 0 5px ${item.color}"></div>
+                        <span class="font-bold text-lg">${item.name}</span>
+                    </div>
+                    <span class="font-mono text-xl text-white/90">${item.percentage}%</span>
+                `;
+                container.appendChild(el);
+            });
+        }
+
+        function renderAfro(results, rng, volume) {
+            const container = document.getElementById('afroContainer');
+            const baseSize = 300;
+            const centerX = baseSize / 2;
+            const centerY = baseSize / 2;
+            
+            const maxRadius = (baseSize / 2) * (0.8 + (volume / 1000)); 
+            const particleCount = 200 + Math.floor(volume * 0.5);
+
+            let weightedPool = [];
+            results.forEach(r => {
+                for(let i=0; i<r.percentage; i++) {
+                    weightedPool.push(r);
+                }
+            });
+
+            for (let i = 0; i < particleCount; i++) {
+                const item = weightedPool[Math.floor(rng() * weightedPool.length)];
+                
+                const angle = rng() * Math.PI * 2;
+                const radius = Math.sqrt(rng()) * maxRadius * 0.9; 
+
+                const x = centerX + Math.cos(angle) * radius;
+                const y = centerY + Math.sin(angle) * radius;
+                const size = 15 + rng() * 25;
+
+                const el = document.createElement('div');
+                el.classList.add('afro-particle');
+                el.style.width = `${size}px`;
+                el.style.height = `${size}px`;
+                el.style.backgroundColor = item.color;
+                el.style.left = `${x - size/2}px`;
+                el.style.top = `${y - size/2}px`;
+                el.style.zIndex = Math.floor(rng() * 50);
+                
+                if (size > 30 && rng() > 0.7) {
+                    el.classList.add('afro-text-particle');
+                    el.style.fontSize = `${size * 0.4}px`;
+                    el.innerText = item.name;
+                }
+
+                container.appendChild(el);
+            }
+
+            for (let i=0; i<30; i++) {
+                const angle = (i / 30) * Math.PI * 2;
+                const radius = maxRadius * 0.85 + (rng() * 20);
+                const x = centerX + Math.cos(angle) * radius;
+                const y = centerY + Math.sin(angle) * radius;
+                const size = 10 + rng() * 10;
+                
+                const item = weightedPool[Math.floor(rng() * weightedPool.length)];
+                
+                const el = document.createElement('div');
+                el.classList.add('afro-particle');
+                el.style.width = `${size}px`;
+                el.style.height = `${size}px`;
+                el.style.backgroundColor = item.color;
+                el.style.left = `${x - size/2}px`;
+                el.style.top = `${y - size/2}px`;
+                container.appendChild(el);
+            }
+        }
+
+        // --- 画像処理・トリミングロジック ---
+
+        // ファイルアップロード開始
+        document.getElementById('faceUpload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.onload = function() {
+                        openCropModal(img);
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+            // 同じファイルを選べるようにリセット
+            e.target.value = '';
+        });
+
+        // モーダルを開く
+        function openCropModal(img) {
+            cropState.img = img;
+            cropState.scale = 1;
+            cropState.x = 0;
+            cropState.y = 0;
+            cropState.lastX = 0;
+            cropState.lastY = 0;
+            
+            // モーダル表示
+            document.getElementById('cropModal').classList.remove('hidden');
+            
+            // スライダーリセット
+            document.getElementById('cropZoom').value = 1;
+
+            // Canvasサイズ初期化（コンテナサイズに合わせる）
+            const wrapper = document.getElementById('cropAreaWrapper');
+            cropCanvas.width = wrapper.clientWidth;
+            cropCanvas.height = wrapper.clientHeight;
+
+            // 初期位置：画像を中心に合わせる、サイズは短辺をCanvasに合わせる
+            const ratio = Math.min(cropCanvas.width / img.width, cropCanvas.height / img.height);
+            // 最初は少し大きめに表示して枠を埋める
+            cropState.scale = ratio * 1.2; 
+            document.getElementById('cropZoom').value = cropState.scale;
+            
+            drawCropCanvas();
+        }
+
+        // モーダルを閉じる
+        function closeCropModal() {
+            document.getElementById('cropModal').classList.add('hidden');
+        }
+
+        // Canvas描画
+        function drawCropCanvas() {
+            if (!cropState.img) return;
+
+            cropCtx.clearRect(0, 0, cropCanvas.width, cropCanvas.height);
+            
+            cropCtx.save();
+            cropCtx.translate(cropCanvas.width / 2, cropCanvas.height / 2);
+            cropCtx.translate(cropState.x, cropState.y);
+            cropCtx.scale(cropState.scale, cropState.scale);
+            cropCtx.drawImage(cropState.img, -cropState.img.width / 2, -cropState.img.height / 2);
+            cropCtx.restore();
+        }
+
+        // ズーム操作
+        document.getElementById('cropZoom').addEventListener('input', function(e) {
+            cropState.scale = parseFloat(e.target.value);
+            drawCropCanvas();
+        });
+
+        // ドラッグ操作
+        const cropArea = document.getElementById('cropAreaWrapper');
+        
+        cropArea.addEventListener('mousedown', startCropDrag);
+        cropArea.addEventListener('touchstart', startCropDrag, {passive: false});
+
+        window.addEventListener('mousemove', doCropDrag);
+        window.addEventListener('touchmove', doCropDrag, {passive: false});
+
+        window.addEventListener('mouseup', endCropDrag);
+        window.addEventListener('touchend', endCropDrag);
+
+        function startCropDrag(e) {
+            e.preventDefault();
+            cropState.isDragging = true;
+            const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+            const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+            cropState.startX = clientX;
+            cropState.startY = clientY;
+            cropState.lastX = cropState.x;
+            cropState.lastY = cropState.y;
+        }
+
+        function doCropDrag(e) {
+            if (!cropState.isDragging) return;
+            e.preventDefault();
+            const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+            const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+            
+            const dx = clientX - cropState.startX;
+            const dy = clientY - cropState.startY;
+
+            cropState.x = cropState.lastX + dx;
+            cropState.y = cropState.lastY + dy;
+            
+            drawCropCanvas();
+        }
+
+        function endCropDrag() {
+            cropState.isDragging = false;
+        }
+
+        // 切り抜き適用
+        function applyCrop() {
+            if (!cropState.img) return;
+
+            // 切り抜き用のオフスクリーンCanvas
+            const size = 300; // 出力解像度
+            const outputCanvas = document.createElement('canvas');
+            outputCanvas.width = size;
+            outputCanvas.height = size;
+            const ctx = outputCanvas.getContext('2d');
+
+            // 円形クリップ
+            ctx.beginPath();
+            ctx.arc(size/2, size/2, size/2, 0, Math.PI * 2);
+            ctx.clip();
+
+            // 描画パラメータの計算
+            // モーダル上のCanvasの中心(width/2, height/2)にあるものが、出力の中心(size/2, size/2)に来る
+            // モーダル上のスケールと出力スケールの比率を考慮する必要があるが、
+            // ここでは簡易的に「見た目の中心にあるもの」を取得する計算を行う
+
+            // モーダルの円（直径192px = 12rem）とCanvasの関係
+            // CSSで円は w-48 h-48 (192px)
+            // Canvas全体に対する比率を計算する
+            
+            // シンプルなアプローチ:
+            // cropCanvasの中心座標を基準に、cropState.x, y, scaleを使って描画
+            // ただし、出力Canvasのサイズ(300)に合わせてスケーリングする
+            
+            // モーダル上の円の直径(px)
+            const guideDiameter = 192; 
+            // 出力サイズとの倍率
+            const outputScaleFactor = size / guideDiameter;
+
+            ctx.translate(size/2, size/2);
+            // 移動量も倍率に合わせる
+            ctx.translate(cropState.x * outputScaleFactor, cropState.y * outputScaleFactor);
+            // スケールも合わせる
+            const finalScale = cropState.scale * outputScaleFactor;
+            ctx.scale(finalScale, finalScale);
+            
+            ctx.drawImage(cropState.img, -cropState.img.width/2, -cropState.img.height/2);
+
+            // 適用
+            const dataUrl = outputCanvas.toDataURL('image/png');
+            const imgEl = document.getElementById('uploadedFaceImage');
+            const iconEl = document.getElementById('defaultFaceIcon');
+            
+            imgEl.src = dataUrl;
+            imgEl.classList.remove('hidden');
+            iconEl.classList.add('hidden');
+            
+            // 閉じる
+            closeCropModal();
+        }
+
+
+        // --- その他機能 ---
+
+        function shareOnTwitter() {
+            if (!currentResults || currentResults.length === 0) return;
+
+            const top3 = currentResults.slice(0, 3).map(r => `${r.name}`).join('・');
+            const volume = document.getElementById('volumeValue').innerText;
+            
+            const text = `【${currentName}のアフロ診断結果】\n\nボリューム: ${volume}\n成分: ${top3} など\n\nあなたのアフロには${currentResults[0].name}が詰まっています！\n\n#脳内アフロメーカー #BrainAfro \n`;
+            const url = window.location.href; 
+
+            const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+            window.open(tweetUrl, '_blank');
+        }
+
+        function downloadImage() {
+            const captureArea = document.getElementById('captureArea');
+            html2canvas(captureArea, {
+                backgroundColor: '#1f2937', 
+                scale: 2, 
+                logging: false,
+                useCORS: true,
+                allowTaint: true 
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `${currentName}_afro.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        }
+        
+        document.getElementById('nameInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                analyzeAfro();
+            }
+        });
+    </script>
+</body>
+</html>
